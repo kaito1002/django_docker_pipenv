@@ -1,0 +1,40 @@
+version: "3.7"
+
+services:
+  django_app:
+    build: ./django_api_server
+    container_name: django_app
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./django_api_server:/django_app
+      - /django_app/.venv
+    environment:
+      PIPENV_VENV_IN_PROJECT: "true"
+      MYSQL_ROOT_PASSWORD: my_password
+      MYSQL_DATABASE: sample_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user_password
+      MYSQL_HOST: mysql_server
+      MYSQL_PORT: 3306
+      DEV_CONTAINER: "yes"
+    depends_on:
+      - mysql_server
+  mysql_server:
+    build: ./mysql
+    container_name: mysql_server
+    restart: always
+    ports:
+      - "3306:3306"
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ./mysql/initdb.d:/docker-entrypoint-initdb.d
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./mysql/data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: my_password
+      MYSQL_DATABASE: sample_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user_password
+      TZ: "Asia/Tokyo"
